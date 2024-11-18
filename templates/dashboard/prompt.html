@@ -1,0 +1,77 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">Create and Manage Prompts</h1>
+    
+    <!-- Prompt Creation Form -->
+    <div class="card my-4">
+        <div class="card-header">
+            <h4>Create a New Prompt</h4>
+        </div>
+        <div class="card-body">
+            <form action="{{ url_for('dashboard.create_prompt') }}" method="POST">
+                <div class="mb-3">
+                    <label for="prompt" class="form-label">Prompt Text</label>
+                    <textarea
+                        id="prompt"
+                        name="prompt"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Enter your prompt here"
+                        required
+                    ></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="context" class="form-label">Context (Optional)</label>
+                    <textarea
+                        id="context"
+                        name="context"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Provide additional context if needed"
+                    ></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Prompt</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Display Existing Prompts -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Your Prompts</h4>
+        </div>
+        <div class="card-body">
+            {% if prompt_logs %}
+                <ul class="list-group">
+                    {% for prompt in prompt_logs %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>Prompt:</strong> {{ prompt.prompt_text }}<br>
+                                <strong>Generated Output:</strong> {{ prompt.generated_output[:50] }}...
+                            </div>
+                            <form
+                                action="{{ url_for('dashboard.delete_prompt', id=prompt.id) }}"
+                                method="POST"
+                                style="display: inline-block;"
+                            >
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger btn-sm"
+                                    onclick="return confirm('Are you sure you want to delete this prompt?');"
+                                >
+                                    Delete
+                                </button>
+                            </form>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-muted">No prompts found. Create a new one above!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
