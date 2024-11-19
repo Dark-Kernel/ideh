@@ -1,6 +1,3 @@
-# modules/web_application/services/prompt_handler.py
-# from langchain.chat_models import ChatOpenAI
-from langchain_core.runnables import RunnableSequence
 from langchain_google_genai import ChatGoogleGenerativeAI
 import google.generativeai as genai
 from langchain.prompts import ChatPromptTemplate
@@ -15,15 +12,6 @@ class PromptHandler:
                 model=f"{os.getenv('GEMINI_DEFAULT_MODEL')}",
                 temperature=0.7
                 )
-        # self.llm = GenerativeModelWrapper(
-        #     genai.GenerativeModel(f"{os.getenv('GEMINI_DEFAULT_MODEL')}")
-        # )
-        # self.llm = genai.GenerativeModel(f"{os.getenv('GEMINI_DEFAULT_MODEL')}")
-        # ChatOpenAI(
-        #     temperature=0.7,
-        #     model_name="gpt-3.5-turbo",
-        #     openai_api_key=os.getenv('OPENAI_API_KEY')
-        # )
 
     def process_scraped_data(self, scraped_data):
         prompt = ChatPromptTemplate.from_template("""
@@ -79,14 +67,3 @@ class PromptHandler:
 
         return response, tokens_used
 
-    # def gemini_check(self):
-    #     messages = [
-    #     (
-    #         "system",
-    #         "You are a helpful assistant that translates English to French. Translate the user sentence.",
-    #     ),
-    #     ("human", "I love programming."),
-    #     ]
-    #     ai_msg = self.llm.generate_content('Tell me joke')
-    #     print(ai_msg.text)
-    #     return ai_msg.text;

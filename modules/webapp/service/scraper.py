@@ -5,7 +5,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import json
 from urllib.parse import urlparse
 
 class WebScraper:
@@ -21,7 +20,6 @@ class WebScraper:
             # Initial request to check if JS rendering is needed
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.text, 'html.parser')
-            print("Inside scrape_url:", soup)
             
             # Check if content needs JS rendering
             if self._needs_js_rendering(soup):
@@ -29,7 +27,7 @@ class WebScraper:
             else:
                 content = self._scrape_with_requests(soup)
                 
-            print("Inside scrape_url:", content)
+            # print("Inside scrape_url:", content)
 
             return {
                 'status': 'success',

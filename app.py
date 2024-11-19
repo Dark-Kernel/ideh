@@ -11,7 +11,7 @@ def create_app():
     db.init_app(app)
     Migrate(app, db)
 
-    # Register blueprints (to be implemented)
+    # Register blueprints
     from modules.webapp.views.auth import auth_bp, create_google_blueprint
     google_bp = create_google_blueprint(app)
     app.register_blueprint(auth_bp)

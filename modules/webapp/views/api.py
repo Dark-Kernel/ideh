@@ -1,4 +1,3 @@
-# modules/web_application/views/api.py
 from flask import Blueprint, jsonify, request
 from flask_login import current_user, login_required
 from ..models.models import db, ScrapedData, PromptLog
@@ -13,6 +12,9 @@ prompt_handler = PromptHandler()
 @login_required
 def get_scraped_data():
     data = ScrapedData.query.filter_by(created_by_user_id=current_user.id).all()
+    print("From api, get_scraped_data:", data)
+    for d in data:
+        print("From api, in loop:", d)
     return jsonify([{
         'id': item.id,
         'url': item.url,
@@ -32,6 +34,7 @@ def create_scraped_data():
         return jsonify({'error': 'URL is required'}), 400
         
     result = scraper.scrape_url(url)
+    print("From api, result:", result)
     
     if result['status'] == 'error':
         return jsonify({'error': result['error']}), 400
@@ -54,12 +57,16 @@ def create_scraped_data():
         'created_at': scraped_data.created_at.isoformat()
     }), 201
 
-@api_bp.route('/scraped-data/<int:id>', methods=['GET'])
+@api_bp.route('/scraped-data/<string:id>', methods=['GET'])
 @login_required
 def get_scraped_data_by_id(id):
     data = ScrapedData.query.get_or_404(id)
     if data.created_by_user_id != current_user.id:
         return jsonify({'error': 'Unauthorized'}), 403
+
+    print("From api, get_scraped_data:", data)
+    for d in data:
+        print("From api, in loop:", d)
         
     return jsonify({
         'id': data.id,
@@ -69,7 +76,7 @@ def get_scraped_data_by_id(id):
         'created_at': data.created_at.isoformat()
     })
 
-@api_bp.route('/scraped-data/<int:id>', methods=['DELETE'])
+@api_bp.route('/scraped-data/<string:id>', methods=['DELETE'])
 @login_required
 def delete_scraped_data(id):
     data = ScrapedData.query.get_or_404(id)
@@ -125,7 +132,7 @@ def create_prompt():
         'created_at': prompt_log.created_at.isoformat()
     }), 201
 
-@api_bp.route('/prompts/<int:id>', methods=['DELETE'])
+@api_bp.route('/prompts/<string:id>', methods=['DELETE'])
 @login_required
 def delete_prompt(id):
     prompt = PromptLog.query.get_or_404(id)

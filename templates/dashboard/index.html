@@ -80,7 +80,7 @@
                                             <h6>Content:</h6>
                                             <pre class="bg-light p-3">{{ data.content | tojson(indent=2) }}</pre>
                                             <h6>Metadata:</h6>
-                                            <pre class="bg-light p-3">{{ data.metadata | tojson(indent=2) }}</pre>
+                                            <pre class="bg-light p-3">{{ data.metadata }}</pre>
                                         </div>
                                     </div>
                                 </div>
@@ -106,10 +106,10 @@
                                 </div>
                                 <p class="mb-1"><small>Tokens used: {{ prompt.tokens_used }}</small></p>
                                 <div class="mt-2">
-                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#promptModal{{ prompt.id | string  }}">
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#promptModal{{ prompt.id }}">
                                         View Response
                                     </button>
-                                    <form method="POST" action="{{ url_for('dashboard.delete_prompt', id=prompt.id | string ) }}" class="d-inline">
+                                    <form method="POST" action="{{ url_for('dashboard.delete_prompt', id=prompt.id) }}" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
                                     </form>
                                 </div>

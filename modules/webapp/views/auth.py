@@ -30,14 +30,14 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('user_id'):
-            flash('Please log in to access this page', 'error')
+            flash('Please log in to access this page at deco', 'error')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function
 
 @auth_bp.route('/login')
 def login():
-    if 'user_id' in session:
+    if session.get('user_id'):
         return redirect(url_for('dashboard.index'))
     
     if not google.authorized:
@@ -50,6 +50,7 @@ def login():
 def login_callback():
     if not google.authorized:
         flash('Failed to log in.', 'error')
+        print("Failed to log in. at callback")
         return redirect(url_for('auth.login'))
 
     try:
@@ -60,6 +61,7 @@ def login_callback():
 
         user_info = resp.json()
         logger.info(f"Received user info: {user_info.get('email')}")
+        print( "Received user info:", user_info, "ID typpe", type(user_info['id']) )
 
         # Find or create user
         user = User.query.filter_by(email=user_info['email']).first()
@@ -83,6 +85,7 @@ def login_callback():
 
         # Set session data
         session['user_id'] = user.id
+        print("Session data:", session)
         session['user_info'] = {
             'id': user.id,
             'name': user.name,
@@ -100,11 +103,11 @@ def login_callback():
 
 @auth_bp.route('/logout')
 def logout():
-    # Clear all session data
     session.clear()
     
     # Token revocation if needed
     if google.authorized:
+        print("Revoking token: ", google.token)
         try:
             token = google.token['access_token']
             resp = google.post(

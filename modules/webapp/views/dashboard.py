@@ -1,6 +1,7 @@
-# modules/web_application/views/dashboard.py
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, session
-from ..models.models import User, db, ScrapedData, PromptLog
+from datetime import datetime
+from flask import Blueprint, render_template, request, flash, redirect, url_for, session
+from flask.json import dumps
+from ..models.models import db, ScrapedData, PromptLog
 from ..service.scraper import WebScraper
 from ..service.prompt_handler import PromptHandler
 from ..views.auth import login_required
@@ -32,47 +33,26 @@ def index():
     try:
         user = get_current_user()
         if not user:
-            flash('Please log in to access this page', 'error')
             return redirect(url_for('auth.login'))
-
         user_id = user["id"]
         
-        # Add debug logging
-        logger.info(f"Fetching data for user_id: {user_id}")
-        
         scraped_data = ScrapedData.query.filter_by(created_by_user_id=user_id).all()
-        logger.info(f"Found {len(scraped_data)} scraped data records")
-        
         prompt_logs = PromptLog.query.filter_by(created_by_user_id=user_id).all()
-        logger.info(f"Found {len(prompt_logs)} prompt logs")
-        
-        # Try serializing one record at a time to identify issues
-        serialized_data = []
-        for data in scraped_data:
-            try:
-                serialized_data.append(data.to_dict())
-                logger.info(f"Serialized data {data.id}")
-            except Exception as e:
-                logger.error(f"Error serializing scraped data {data.id}: {str(e)}")
                 
-        serialized_prompts = []
-        for log in prompt_logs:
-            try:
-                # serialized_prompts.append(log.to_dict())
-                serialized_prompts.append({
-                    "id": str(log.id),  # Ensure UUID is a string
-                    "prompt_text": log.prompt_text,
-                    "created_at": log.created_at,
-                    "tokens_used": log.tokens_used,
-                    "generated_output": log.generated_output,
+        serialized_scrape = []
+        for d in scraped_data:
+            print("Scrape meta ", d.page_metadata)
+            serialized_scrape.append({
+                "id": d.id,
+                "url": d.url,
+                "content": d.content,
+                "metadata": dumps(d.page_metadata),
+                "created_at": d.created_at
                 })
-                logger.info(f"Serialized prompt log {log.id}")
-            except Exception as e:
-                logger.error(f"Error serializing prompt log {log.id}: {str(e)}")
         
         return render_template('dashboard/index.html',
-                             scraped_data=serialized_data, 
-                             prompt_logs=serialized_prompts)
+                             scraped_data=serialized_scrape, 
+                             prompt_logs=prompt_logs) 
     
     except SQLAlchemyError as e:
         logger.error(f"Database error in dashboard: {str(e)}")
@@ -101,13 +81,13 @@ def scrape_url():
                 return redirect(url_for('dashboard.index'))
 
             result = scraper.scrape_url(url)
+            print("Result from scraper at dashboard:", result['metadata'])
             
             if result['status'] == 'success':
                 try:
-                    # Analyze scraped data using LangChain
                     analysis, tokens = prompt_handler.process_scraped_data(result)
                     
-                    # Save to database within transaction
+                    # Save to database
                     scraped_data = ScrapedData(
                         url=url,
                         content=result['content'],
@@ -195,7 +175,7 @@ def create_prompt():
         return redirect(url_for('dashboard.index'))
 
 
-@dashboard_bp.route('/delete/scraped/<int:id>', methods=['POST'])
+@dashboard_bp.route('/delete/scraped/<string:id>', methods=['POST'])
 @login_required
 def delete_scraped(id):
     user = get_current_user()
@@ -214,11 +194,11 @@ def delete_scraped(id):
     flash('Data deleted successfully', 'success')
     return redirect(url_for('dashboard.index'))
 
-@dashboard_bp.route('/delete/prompt/<int:id>', methods=['POST'])
+@dashboard_bp.route('/delete/prompt/<string:id>', methods=['POST'])
 @login_required
 def delete_prompt(id):
     user = get_current_user()
-    user_id = str(user["id"])
+    user_id = user["id"]
     if not user:
         flash('Please log in to access this page', 'error')
         return redirect(url_for('auth.login'))
@@ -233,10 +213,3 @@ def delete_prompt(id):
     flash('Prompt deleted successfully', 'success')
     return redirect(url_for('dashboard.index'))
 
-# @dashboard_bp.route('/dashboard/gemi')
-# @login_required
-# def gemini_check():
-#     from ..service.prompt_handler import PromptHandler
-#     g = PromptHandler()
-#     out = g.gemini_check()
-#     return out
