@@ -55,7 +55,7 @@
                             <div class="list-group-item">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">{{ data.content.get('title', 'Untitled') }}</h6>
-                                    <small>{{ data.created_at.strftime('%Y-%m-%d') }}</small>
+                                    <small>{{ data.created_at }}</small>
                                 </div>
                                 <p class="mb-1"><small>{{ data.url }}</small></p>
                                 <div class="mt-2">
@@ -102,21 +102,21 @@
                             <div class="list-group-item">
                                 <div class="d-flex w-100 justify-content-between">
                                     <h6 class="mb-1">{{ prompt.prompt_text[:50] }}...</h6>
-                                    <small>{{ prompt.created_at.strftime('%Y-%m-%d') }}</small>
+                                    <small>{{ prompt.created_at }}</small>
                                 </div>
                                 <p class="mb-1"><small>Tokens used: {{ prompt.tokens_used }}</small></p>
                                 <div class="mt-2">
-                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#promptModal{{ prompt.id }}">
+                                    <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#promptModal{{ prompt.id | string  }}">
                                         View Response
                                     </button>
-                                    <form method="POST" action="{{ url_for('dashboard.delete_prompt', id=prompt.id) }}" class="d-inline">
+                                    <form method="POST" action="{{ url_for('dashboard.delete_prompt', id=prompt.id | string ) }}" class="d-inline">
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
                                     </form>
                                 </div>
                             </div>
 
                             <!-- Modal for Prompt Response -->
-                            <div class="modal fade" id="promptModal{{ prompt.id }}" tabindex="-1">
+                            <div class="modal fade" id="promptModal{{ prompt.id | string  }}" tabindex="-1">
                                 <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header">
